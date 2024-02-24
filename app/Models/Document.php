@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Actions\CreateEmbeddings;
 use App\Observers\DocumentObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -23,16 +24,19 @@ class Document extends Model
         'meta' => 'array',
     ];
 
-    public static function search(string $query, int $limit = 3): Collection
+    public function scopeSearch($query, string|array $search, int $limit = 3): Builder
     {
-        $result = resolve(CreateEmbeddings::class)->execute($query);
+        if (is_array($query)) {
+            $query = implode(' ', $query);
+        }
+
+        $result = resolve(CreateEmbeddings::class)->execute($query->get());
         $embedding = new Vector($result->embeddings[0]->embedding);
 
-        return static::query()
+        return Document::query()
             ->select('title', 'content')
             ->selectRaw('1 - (embedding <=> ?) as _score', [$embedding])
             ->orderBy('_score', 'desc')
-            ->take($limit)
-            ->get();
+            ->take($limit);
     }
 }

@@ -26,16 +26,16 @@ Artisan::command('index {filename}', function ($filename, CreateDocuments $creat
     $this->info('Documents indexed successfully');
 })->purpose('Index documents');
 
-Artisan::command('search {query*}', function ($query) {
-    $documents = Document::search(implode(' ', $query));
+Artisan::command('search {--limit=3} {query*}', function ($query) {
+    $documents = Document::search($query, $this->option('limit'))->get();
 
     foreach ($documents as $document) {
-        $this->line("# {$document->title}");
-        $this->line('');
-        $this->line($document->content);
-        $this->line('');
-        $this->line((int) ($document->_score * 100) . '%');
-        $this->line('---');
-        $this->line('');
+        $this->info("# {$document->title}");
+        $this->info('');
+        $this->info($document->content);
+        $this->info('');
+        $this->info('Similarity: ' . (int) ($document->_score * 100) . '%');
+        $this->info('---');
+        $this->info('');
     }
 })->purpose('Search documents');
