@@ -1,10 +1,11 @@
 # bail
 
-POC semantic search for Laravel and PostgreSQL with pgvector. OpenAI's `text-embedding-3-small` model is used for the embeddings.
+POC semantic search for _Laravel_ and _PostgreSQL_ with _pgvector_. _OpenAI_'s `text-embedding-3-small` model is used for the embeddings.
 
 ## requirements
 
 * postgresql 14+
+* _OpenAI_ API key
 
 ## setup
 
@@ -17,7 +18,7 @@ php artisan migrate
 
 ## seed
 
-There are some basic documents in the seeders:
+There are some basic documents in the seeders. You can index your own documents (see below).
 ```
 php artisan db:seed
 ```
