@@ -2,6 +2,8 @@
 
 POC semantic search for _Laravel_ and _PostgreSQL_ with _pgvector_. _OpenAI_'s `text-embedding-3-small` model is used for the embeddings.
 
+Embedding responses are cached for 7 days to avoid repeated calls with the same content.
+
 ## requirements
 
 * postgresql 14+
