@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Pgvector\Laravel\Vector;
 
 #[ObservedBy(DocumentObserver::class)]
@@ -25,27 +26,28 @@ class Document extends Model
         'meta' => 'array',
     ];
 
-    public static function hash(array $data): string
+    public static function hash(array|Document $data): string
     {
-        $meta = json_encode(Arr::get($data, 'meta', []));
-        $embedding = json_encode(Arr::get($data, 'embedding', []));
+        $meta = json_encode(data_get($data, 'meta', []));
+        $embedding = json_encode(data_get($data, 'embedding', []));
 
-        return hash('sha256', "{$data['content']}-{$data['content_type']}-{$meta}-{$embedding}");
+        return hash('sha256', "{$data['content']}-{$meta}-{$embedding}");
     }
 
-    public function scopeSearch($query, string|array $search, int $limit = 3): Builder
+    public static function search(string|array $search, int $limit = 3): Collection
     {
-        if (is_array($query)) {
-            $query = implode(' ', $query);
+        if (is_array($search)) {
+            $search = implode(' ', $search);
         }
 
-        $result = resolve(CreateEmbeddings::class)->execute($query->get());
+        $result = resolve(CreateEmbeddings::class)->execute([['content' => $search]]);
         $embedding = new Vector($result->embeddings[0]->embedding);
 
         return Document::query()
-            ->select('title', 'content')
-            ->selectRaw('1 - (embedding <=> ?) as _score', [$embedding])
-            ->orderBy('_score', 'desc')
-            ->take($limit);
+            ->select('content', 'meta')
+            ->selectRaw('embedding <=> ? as _distance', [$embedding])
+            ->orderBy('_distance')
+            ->take($limit)
+            ->get();
     }
 }

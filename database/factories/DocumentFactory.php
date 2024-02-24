@@ -17,9 +17,7 @@ class DocumentFactory extends Factory
     public function definition(): array
     {
         return [
-            'title' => $this->faker->sentence(),
             'content' => $this->faker->paragraphs(3, true),
-            'content_type' => 'text/plain',
             'meta' => [
                 'author' => $this->faker->name(),
                 'created_at' => $this->faker->dateTimeThisYear()->format('Y-m-d H:i:s'),

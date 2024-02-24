@@ -13,9 +13,7 @@ return new class extends Migration
     {
         Schema::create('documents', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
             $table->text('content');
-            $table->string('content_type')->default('text/plain');
             $table->vector('embedding', 1536); // Dimensionality; 1536 for OpenAI's model
             $table->string('hash')->unique();
             $table->jsonb('meta')->nullable();

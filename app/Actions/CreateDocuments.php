@@ -42,10 +42,8 @@ class CreateDocuments
                     $documents[] = Document::updateOrCreate([
                         'hash' => Document::hash($document),
                     ], [
-                        'title' => trim($document['title']),
                         'content' => trim($document['content']),
                         'meta' => Arr::get($document, 'meta', []),
-                        'content_type' => $document['content_type'],
                         'embedding' => $embedding->embedding,
                     ]);
 

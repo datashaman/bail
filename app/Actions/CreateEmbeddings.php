@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Models\Document;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use OpenAI\Laravel\Facades\OpenAI;
@@ -10,9 +11,16 @@ class CreateEmbeddings
 {
     public function execute(string|array|Collection $documents)
     {
-        return Cache::remember(
-            'embeddings_' . md5(serialize($documents)),
-            now()->addDays(7),
+        $hash = md5(
+            collect($documents)
+                ->map(
+                    fn ($document) => Document::hash($document)
+                )
+                ->implode('-')
+        );
+
+        return Cache::rememberForever(
+            "embeddings-{$hash}",
             fn () => $this->createEmbeddings($documents)
         );
     }

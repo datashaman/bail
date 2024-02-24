@@ -5,6 +5,7 @@ use App\Actions\CreatePropertyDocuments;
 use App\Models\Document;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Str;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,15 +39,13 @@ Artisan::command('properties:index {--delete} {--limit=3} {filename}', function 
 })->purpose('Index documents');
 
 Artisan::command('search {--limit=3} {query*}', function ($query) {
-    $documents = Document::search($query, $this->option('limit'))->get();
+    $documents = Document::search($query, $this->option('limit'));
 
     foreach ($documents as $document) {
-        $this->info("# {$document->title}");
-        $this->info('');
+        $this->info('---');
         $this->info($document->content);
         $this->info('');
-        $this->info('Similarity: ' . (int) ($document->_score * 100) . '%');
-        $this->info('---');
+        $this->info('Similarity: ' . (int) ((1 - $document->_distance) * 100) . '%');
         $this->info('');
     }
 })->purpose('Search documents');
