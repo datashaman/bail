@@ -21,9 +21,12 @@ class CreateDocuments
             ->map(function ($chunk) {
                 $chunk = $chunk->values();
 
-                $result = $this->createEmbeddings->execute($chunk);
+                $embeddings = $this
+                    ->createEmbeddings
+                    ->execute($chunk)
+                    ->embeddings;
 
-                foreach ($result->embeddings as $embedding) {
+                foreach ($embeddings as $embedding) {
                     $document = $chunk[$embedding->index];
 
                     return Document::updateOrCreate([

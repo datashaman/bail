@@ -38,11 +38,17 @@ where `filename.json` is a JSON file with the following structure:
 [
     {
       "title": "A title",
-      "content": "This is a document"
+      "content": "This is a document",
+      "meta": {
+          "key1": "value1"
+      }
     },
     {
       "title": "Another title",
-      "content": "This is another document"
+      "content": "This is another document",
+      "meta": {
+          "key2": "value2"
+      }
     }
 ]
 ```
