@@ -27,9 +27,15 @@ Artisan::command('index {filename}', function ($filename, CreateDocuments $creat
 })->purpose('Index documents');
 
 Artisan::command('search {query*}', function ($query) {
-    $documents = Document::search(implode(' ', $query))
-        ->map(fn ($document) => [$document->title, $document->content, (int) ($document->_score * 100) . '%'])
-        ->all();
+    $documents = Document::search(implode(' ', $query));
 
-    $this->table(['Title', 'Content', 'Score'], $documents);
+    foreach ($documents as $document) {
+        $this->line("# {$document->title}");
+        $this->line('');
+        $this->line($document->content);
+        $this->line('');
+        $this->line((int) ($document->_score * 100) . '%');
+        $this->line('---');
+        $this->line('');
+    }
 })->purpose('Search documents');
