@@ -1,10 +1,9 @@
 <?php
 
+use App\Actions\CreateDocuments;
 use App\Models\Document;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
-use OpenAI\Laravel\Facades\OpenAI;
-use Pgvector\Laravel\Vector;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,26 +20,16 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
+Artisan::command('index {filename}', function ($filename, CreateDocuments $createDocuments) {
+    $documents = collect(json_decode(file_get_contents($filename), true));
+    $createDocuments->execute($documents->take(300));
+    $this->info('Documents indexed successfully');
+})->purpose('Index documents');
+
 Artisan::command('search {query*}', function ($query) {
-    $query = implode(' ', $query);
-
-    $result = OpenAI::embeddings()->create([
-        'model' => config('openai.embedding_model'),
-        'input' => $query,
-    ]);
-
-    $embedding = new Vector($result->embeddings[0]->embedding);
-
-    $documents = Document::query()
-        ->select('title')
-        ->selectRaw('1 - (embedding <=> ?) as similarity', [$embedding])
-        ->orderBy('similarity', 'desc')
-        ->take(2)
-        ->get();
-
-    $documents = $documents
-        ->map(fn ($document) => [$document->title, $document->similarity])
+    $documents = Document::search(implode(' ', $query))
+        ->map(fn ($document) => [$document->title, $document->content, (int) ($document->_score * 100) . '%'])
         ->all();
 
-    $this->table(['Document', 'Similarity'], $documents);
+    $this->table(['Title', 'Content', 'Score'], $documents);
 })->purpose('Search documents');

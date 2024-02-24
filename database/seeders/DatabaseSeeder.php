@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Actions\CreateDocuments;
 use App\Models\Document;
 use Illuminate\Database\Seeder;
 use OpenAI\Laravel\Facades\OpenAI;
@@ -11,9 +12,9 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database.
      */
-    public function run(): void
+    public function run(CreateDocuments $createDocuments): void
     {
-        $documents = collect([
+        $documents = [
             [
                 "title" => "The Importance of Artificial Intelligence in Modern Healthcare",
                 "content" => "Artificial intelligence (AI) is revolutionizing modern healthcare by enabling more accurate diagnoses, personalized treatment plans, and efficient patient care management."
@@ -54,25 +55,8 @@ class DatabaseSeeder extends Seeder
                 "title" => "Addressing Cybersecurity Challenges in the Digital Age",
                 "content" => "With the increasing digitization of society, cybersecurity has become a critical concern, requiring robust strategies to protect against cyber threats, data breaches, and malicious attacks."
             ],
-        ]);
+        ];
 
-        $result = OpenAI::embeddings()->create([
-            'model' => config('openai.embedding_model'),
-            'input' => $documents->pluck('content')->all(),
-        ]);
-
-        foreach ($documents as $index => $document) {
-            Document::create([
-                'title' => $document['title'],
-                'content' => $document['content'],
-                'meta' => [],
-                'content_type' => 'text/plain',
-                'embedding' => $result->embeddings[$index]->embedding,
-                'hash' => md5(json_encode([
-                    'content' => $document['content'],
-                    'meta' => [],
-                ])),
-            ]);
-        }
+        resolve(CreateDocuments::class)->execute($documents);
     }
 }

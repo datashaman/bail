@@ -17,7 +17,7 @@ return new class extends Migration
             $table->text('content');
             $table->string('content_type')->default('text/plain');
             $table->vector('embedding', 1536); // Dimensionality; 1536 for OpenAI's model
-            $table->string('hash');
+            $table->string('hash')->unique();
             $table->jsonb('meta')->nullable();
             $table->timestamps();
         });
