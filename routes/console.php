@@ -37,15 +37,3 @@ Artisan::command('properties:index {--delete} {--limit=3} {filename}', function 
     $this->info('');
     $this->info('Documents indexed successfully');
 })->purpose('Index documents');
-
-Artisan::command('search {--limit=3} {query*}', function ($query) {
-    $documents = Document::search($query, $this->option('limit'));
-
-    foreach ($documents as $document) {
-        $this->info('---');
-        $this->info($document->content);
-        $this->info('');
-        $this->info('Similarity: ' . (int) ((1 - $document->_distance) * 100) . '%');
-        $this->info('');
-    }
-})->purpose('Search documents');

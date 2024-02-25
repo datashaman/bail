@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Actions\CreateEmbeddings;
 use App\Observers\DocumentObserver;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -34,20 +35,26 @@ class Document extends Model
         return hash('sha256', "{$data['content']}-{$meta}-{$embedding}");
     }
 
-    public static function search(string|array $search, int $limit = 3): Collection
+    public static function search(string|array|Vector $query, int $perPage = 10, int $page = 1): LengthAwarePaginator
     {
-        if (is_array($search)) {
-            $search = implode(' ', $search);
+        if (is_array($query)) {
+            $query = implode(' ', $query);
         }
 
-        $result = resolve(CreateEmbeddings::class)->execute([['content' => $search]]);
-        $embedding = new Vector($result->embeddings[0]->embedding);
+        if (is_string($query)) {
+            return Document::query()
+                ->select('id', 'content', 'meta')
+                ->selectRaw("ts_rank_cd(tsv, websearch_to_tsquery('english', ?)) as _score", [$query])
+                ->whereRaw("tsv @@ websearch_to_tsquery('english', ?)", [$query])
+                ->orderBy('_score', 'desc')
+                ->paginate($perPage, ['*'], 'page', $page);
+        }
 
         return Document::query()
-            ->select('content', 'meta')
-            ->selectRaw('embedding <=> ? as _distance', [$embedding])
-            ->orderBy('_distance')
-            ->take($limit)
-            ->get();
+            ->select('id', 'content', 'meta')
+            ->selectRaw('1 - (embedding <=> ?) as _score', [$query])
+            ->whereRaw("1 - (embedding <=> ?) > ?", [$query, 0.33])
+            ->orderBy('_score', 'desc')
+            ->paginate($perPage, ['*'], 'page', $page);
     }
 }
