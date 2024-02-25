@@ -10,7 +10,6 @@
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
-        "maxakawizard/json-collection-parser": "~1.0",
         "openai-php/laravel": "^0.8.1",
         "pgvector/pgvector": "^0.1.4"
     },
