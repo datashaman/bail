@@ -20,9 +20,18 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // This is a Postgres-specific index that allows us to do fast nearest-neighbor searches
-        // when there are a lot of high-dimensional embeddings in the database.
+        // This allows us to do fast nearest-neighbor searches when
+        // there are a lot of high-dimensional embeddings in the database.
         DB::statement('CREATE INDEX embeddings_index ON documents USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100)');
+
+        // This allows us to do fast full-text searches.
+        DB::statement('ALTER TABLE documents ADD COLUMN tsv tsvector');
+        DB::statement('CREATE INDEX documents_tsv_index ON documents USING GIN(tsv)');
+        DB::statement("
+            CREATE TRIGGER tsvectorupdate
+            BEFORE INSERT OR UPDATE ON documents
+            FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger(tsv, 'pg_catalog.english', content)
+        ");
     }
 
     /**
