@@ -14,16 +14,20 @@ class CreateDocuments
     ) {
     }
 
-    public function execute(array|Collection $documents, ?ProgressBar $bar = null, bool $deleteExisting = false): Collection
-    {
+    public function execute(
+        array|Collection $documents,
+        ?ProgressBar $bar = null,
+        bool $delete = false,
+        int $chunk = 5
+    ): Collection {
         $documents = collect($documents);
 
-        if ($deleteExisting) {
+        if ($delete) {
             Document::query()->delete();
         }
 
         return $documents
-            ->chunk(10)
+            ->chunk($chunk)
             ->map(function ($chunk) use ($bar) {
                 $chunk = $chunk
                     ->values()
@@ -34,14 +38,17 @@ class CreateDocuments
                     ->execute($chunk)
                     ->embeddings;
 
+                if ($chunk->count() !== count($embeddings)) {
+                    throw new \Exception('Embeddings count does not match documents count');
+                }
+
                 $documents = [];
 
                 foreach ($embeddings as $embedding) {
                     $document = $chunk[$embedding->index];
 
-                    $documents[] = Document::updateOrCreate([
+                    $documents[] = Document::create([
                         'hash' => Document::hash($document),
-                    ], [
                         'content' => trim($document['content']),
                         'meta' => Arr::get($document, 'meta', []),
                         'embedding' => $embedding->embedding,

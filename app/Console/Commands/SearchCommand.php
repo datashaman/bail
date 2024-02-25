@@ -9,7 +9,11 @@ use Pgvector\Laravel\Vector;
 
 class SearchCommand extends Command
 {
-    protected $signature = 'search {--per-page=10} {--page=1} {--embedding} {query*}';
+    protected $signature = 'search {query* : The query to search for}
+        {--per-page=10 : The number of results to return per page}
+        {--page=1 : The page number to return}
+        {--embedding : Use pgvector search, default is text search}
+    ';
     protected $description = 'Search documents';
 
     public function handle(CreateEmbeddings $createEmbeddings)

@@ -12,12 +12,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Pgvector\Laravel\HasNeighbors;
 use Pgvector\Laravel\Vector;
 
 #[ObservedBy(DocumentObserver::class)]
 class Document extends Model
 {
     use HasFactory;
+    use HasNeighbors;
 
     protected $guarded = [
     ];
@@ -35,8 +37,12 @@ class Document extends Model
         return hash('sha256', "{$data['content']}-{$meta}-{$embedding}");
     }
 
-    public static function search(string|array|Vector $query, int $perPage = 10, int $page = 1): LengthAwarePaginator
-    {
+    public static function search(
+        string|array|Vector $query,
+        int $perPage = 10,
+        int $page = 1,
+        float $threshold = 0.3
+    ): LengthAwarePaginator {
         if (is_array($query)) {
             $query = implode(' ', $query);
         }
@@ -53,7 +59,7 @@ class Document extends Model
         return Document::query()
             ->select('id', 'content', 'meta')
             ->selectRaw('1 - (embedding <=> ?) as _score', [$query])
-            ->whereRaw("1 - (embedding <=> ?) > ?", [$query, 0.33])
+            ->whereRaw("1 - (embedding <=> ?) > ?", [$query, $threshold])
             ->orderBy('_score', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
     }

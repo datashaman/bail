@@ -21,7 +21,7 @@ return new class extends Migration
             $table->text('content');
             $table->addColumn('tsvector', 'tsv');
             $table->vector('embedding', 1536); // Dimensionality; 1536 for OpenAI's model
-            $table->string('hash')->unique();
+            $table->char('hash', 64)->unique();
             $table->jsonb('meta')->nullable();
             $table->timestamps();
         });
