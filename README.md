@@ -29,22 +29,32 @@ php artisan db:seed
 
 ### index
 
-Index documents with this command:
 ```
-php artisan index {filename.json}
+Description:
+  Index documents.
+
+Usage:
+  index [options] [--] <filename>
+
+Arguments:
+  filename              The filename of the documents to index
+
+Options:
+      --chunk[=CHUNK]   Chunk size of the documents [default: "5"]
+      --limit[=LIMIT]   Limit the number of documents to index
+      --delete          Delete all documents before indexing
 ```
-where `filename.json` is a JSON file with the following structure:
+
+where `filename` is a JSON file with the following structure:
 ```json
 [
     {
-      "title": "A title",
       "content": "This is a document",
       "meta": {
           "key1": "value1"
       }
     },
     {
-      "title": "Another title",
       "content": "This is another document",
       "meta": {
           "key2": "value2"
@@ -55,11 +65,21 @@ where `filename.json` is a JSON file with the following structure:
 
 ### search
 
-Search documents with this command:
 ```
-php artisan search {query*}
+Description:
+  Search documents
+
+Usage:
+  search [options] [--] <query>...
+
+Arguments:
+  query                      The query to search for
+
+Options:
+      --per-page[=PER-PAGE]  The number of results to return per page [default: "10"]
+      --page[=PAGE]          The page number to return [default: "1"]
+      --embedding            Use pgvector search, default is text search
 ```
-where `query*` is a list of words to search for.
 
 For example:
 ```
