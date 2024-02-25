@@ -25,7 +25,7 @@ There are some basic documents in the seeders. You can index your own documents 
 php artisan db:seed
 ```
 
-## actions
+## commands
 
 ### index
 
